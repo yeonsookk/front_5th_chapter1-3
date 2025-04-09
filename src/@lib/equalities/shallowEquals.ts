@@ -6,48 +6,29 @@
  * 4. 모든 키에 대해 얕은 비교 수행
  */
 export function shallowEquals<T>(objA: T, objB: T): boolean {
-  // 1. 기본 타입 비교
-  // 동일한 참조 이거나, 둘다 null/undefined인 경우
+  // 1. 두 값이 정확히 같은지 확인 (참조가 같은 경우)
   if (objA === objB) return true;
 
-  // 한쪽만 null/undefined인 경우
-  if (objA == null || objB == null) return false;
-
-  // 타입 비교 {} != []
-  if (typeof objA !== typeof objB) return false;
-
-  // 2. 배열 비교
-  if (Array.isArray(objA) && Array.isArray(objB)) {
-    // 길이 비교
-    if (objA.length !== objB.length) return false;
-
-    // 요소 비교
-    for (let i = 0; i < objA.length; i++) {
-      if (objA[i] !== objB[i]) return false;
-    }
-
-    return true;
-  }
-
-  // 객체 비교
+  // 3&4. 둘 다 객체인 경우
   if (typeof objA === "object" && typeof objB === "object") {
-    // 객체 키 비교
     const keysA = Object.keys(objA as object);
     const keysB = Object.keys(objB as object);
 
+    // 3. 키 개수 비교
     if (keysA.length !== keysB.length) return false;
 
+    // 4. 모든 키에 대해 얕은 비교 수행
     for (const key of keysA) {
       if (
         (objA as Record<string, unknown>)[key] !==
         (objB as Record<string, unknown>)[key]
-      )
+      ) {
         return false;
+      }
     }
-
     return true;
   }
 
-  // 3. 기본 타입 비교
+  // 2. 하나라도 객체가 아닌 경우 처리
   return objA === objB;
 }
