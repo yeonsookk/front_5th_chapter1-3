@@ -35,7 +35,7 @@ export function deepEquals<T>(objA: T, objB: T): boolean {
         if (
           !deepEquals(
             (objA as Record<string, unknown>)[key],
-            (objB as Record<string, unknown>)[key]
+            (objB as Record<string, unknown>)[key],
           )
         )
           return false;
