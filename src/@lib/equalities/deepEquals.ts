@@ -23,7 +23,8 @@ export function deepEquals<T>(objA: T, objB: T): boolean {
       }
       return true;
     } else {
-      // 2.2 객체인 경우
+      // 2.2 배열이 아닌 객체인 경우
+
       const keysA = Object.keys(objA as object);
       const keysB = Object.keys(objB as object);
 
