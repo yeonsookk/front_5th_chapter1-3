@@ -1,70 +1,47 @@
 import React, { useState } from "react";
 import { generateItems } from "./utils";
-import { User, Notification } from "./type";
-import { AppContext, AppContextType } from "./contexts/AppContext";
+import { Item } from "./type";
+import {
+  ThemeProvider,
+  UserProvider,
+  NotificationsProvider,
+  useNotificationsContext,
+} from "./contexts";
 import {
   Header,
   ItemList,
   ComplexForm,
   NotificationSystem,
 } from "./components";
+import { useThemeContext } from "./contexts/ThemeContext";
+import { memo, useCallback } from "./@lib";
 
-// 메인 App 컴포넌트
 const App: React.FC = () => {
-  const [theme, setTheme] = useState("light");
-  const [items, setItems] = useState(generateItems(1000));
-  const [user, setUser] = useState<User | null>(null);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-
-  const toggleTheme = () => {
-    setTheme((prevTheme) => (prevTheme === "light" ? "dark" : "light"));
-  };
-
-  const addItems = () => {
+  const [items, setItems] = useState<Item[]>(generateItems(1000));
+  const { addNotification } = useNotificationsContext();
+  const addItems = useCallback(() => {
     setItems((prevItems) => [
       ...prevItems,
       ...generateItems(1000, prevItems.length),
     ]);
-  };
-
-  const login = (email: string) => {
-    setUser({ id: 1, name: "홍길동", email });
-    addNotification("성공적으로 로그인되었습니다", "success");
-  };
-
-  const logout = () => {
-    setUser(null);
-    addNotification("로그아웃되었습니다", "info");
-  };
-
-  const addNotification = (message: string, type: Notification["type"]) => {
-    const newNotification: Notification = {
-      id: Date.now(),
-      message,
-      type,
-    };
-    setNotifications((prev) => [...prev, newNotification]);
-  };
-
-  const removeNotification = (id: number) => {
-    setNotifications((prev) =>
-      prev.filter((notification) => notification.id !== id),
-    );
-  };
-
-  const contextValue: AppContextType = {
-    theme,
-    toggleTheme,
-    user,
-    login,
-    logout,
-    notifications,
-    addNotification,
-    removeNotification,
-  };
+  }, []);
 
   return (
-    <AppContext.Provider value={contextValue}>
+    <NotificationsProvider>
+      <ThemeProvider>
+        <UserProvider addNotification={addNotification}>
+          <AppContent items={items} onAddItems={addItems} />
+        </UserProvider>
+      </ThemeProvider>
+    </NotificationsProvider>
+  );
+};
+
+const AppContent: React.FC<{ items: Item[]; onAddItems: () => void }> = memo(
+  ({ items, onAddItems }) => {
+    const { theme } = useThemeContext();
+
+    return (
       <div
         className={`min-h-screen ${theme === "light" ? "bg-gray-100" : "bg-gray-900 text-white"}`}
       >
@@ -72,7 +49,7 @@ const App: React.FC = () => {
         <div className="container mx-auto px-4 py-8">
           <div className="flex flex-col md:flex-row">
             <div className="w-full md:w-1/2 md:pr-4">
-              <ItemList items={items} onAddItemsClick={addItems} />
+              <ItemList items={items} onAddItemsClick={onAddItems} />
             </div>
             <div className="w-full md:w-1/2 md:pl-4">
               <ComplexForm />
@@ -81,8 +58,8 @@ const App: React.FC = () => {
         </div>
         <NotificationSystem />
       </div>
-    </AppContext.Provider>
-  );
-};
+    );
+  }
+);
 
 export default App;
