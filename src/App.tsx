@@ -1,5 +1,6 @@
 import React, { useState, createContext, useContext } from "react";
 import { generateItems, renderLog } from "./utils";
+import { memo } from "./@lib";
 
 // 타입 정의
 interface Item {
@@ -45,7 +46,7 @@ const useAppContext = () => {
 };
 
 // Header 컴포넌트
-export const Header: React.FC = () => {
+export const Header: React.FC = memo(() => {
   renderLog("Header rendered");
   const { theme, toggleTheme, user, login, logout } = useAppContext();
 
@@ -87,13 +88,13 @@ export const Header: React.FC = () => {
       </div>
     </header>
   );
-};
+});
 
 // ItemList 컴포넌트
 export const ItemList: React.FC<{
   items: Item[];
   onAddItemsClick: () => void;
-}> = ({ items, onAddItemsClick }) => {
+}> = memo(({ items, onAddItemsClick }) => {
   renderLog("ItemList rendered");
   const [filter, setFilter] = useState("");
   const { theme } = useAppContext();
@@ -146,10 +147,10 @@ export const ItemList: React.FC<{
       </ul>
     </div>
   );
-};
+});
 
 // ComplexForm 컴포넌트
-export const ComplexForm: React.FC = () => {
+export const ComplexForm: React.FC = memo(() => {
   renderLog("ComplexForm rendered");
   const { addNotification } = useAppContext();
   const [formData, setFormData] = useState({
@@ -231,10 +232,10 @@ export const ComplexForm: React.FC = () => {
       </form>
     </div>
   );
-};
+});
 
 // NotificationSystem 컴포넌트
-export const NotificationSystem: React.FC = () => {
+export const NotificationSystem: React.FC = memo(() => {
   renderLog("NotificationSystem rendered");
   const { notifications, removeNotification } = useAppContext();
 
@@ -264,7 +265,7 @@ export const NotificationSystem: React.FC = () => {
       ))}
     </div>
   );
-};
+});
 
 // 메인 App 컴포넌트
 const App: React.FC = () => {
