@@ -1,12 +1,11 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { DependencyList } from "react";
 import { shallowEquals } from "../equalities";
 import { useRef } from "./useRef";
 
 /**
- * 의존성 배열이 변경될 때마다 함수를 호출하여 결과 반환
+ * 의존성 배열이 변경되지 않는 한 이전에 계산된 값을 재사용하는 훅
  * @param factory 메모이제이션할 값을 계산하는 콜백함수
- * @param _deps 의존성 배열 (값 변경시 메모이제이션 결과가 변경되는 값들)
+ * @param _deps 의존성 배열 (이 값들이 변경될 때만 factory 함수 재실행)
  * @param _equals 비교 함수 (기본값: 얕은 비교)
  * @returns 메모이제이션된 값
  */
@@ -15,6 +14,8 @@ export function useMemo<T>(
   _deps: DependencyList,
   _equals = shallowEquals
 ): T {
+  // 직접 작성한 useRef를 통해서 만들어보세요.
+
   // 이전 의존성 배열을 저장할 ref
   const ref = useRef(_deps);
   // 메모이제이션된 값을 저장할 ref
