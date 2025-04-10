@@ -1,6 +1,4 @@
-import React, { useState } from "react";
-import { generateItems } from "./utils";
-import { Item } from "./type";
+import React, { useState, useCallback } from "react";
 import {
   ThemeProvider,
   UserProvider,
@@ -14,11 +12,13 @@ import {
   NotificationSystem,
 } from "./components";
 import { useThemeContext } from "./contexts/ThemeContext";
-import { memo, useCallback } from "./@lib";
+import { memo } from "./@lib";
+import { Item, Notification } from "./type";
+import { generateItems } from "./utils";
 
 const App: React.FC = () => {
-  const [items, setItems] = useState<Item[]>(generateItems(1000));
-  const { addNotification } = useNotificationsContext();
+  const [items, setItems] = useState(generateItems(1000));
+
   const addItems = useCallback(() => {
     setItems((prevItems) => [
       ...prevItems,
@@ -29,37 +29,55 @@ const App: React.FC = () => {
   return (
     <NotificationsProvider>
       <ThemeProvider>
-        <UserProvider addNotification={addNotification}>
-          <AppContent items={items} onAddItems={addItems} />
-        </UserProvider>
+        <AppContent items={items} onAddItems={addItems} />
       </ThemeProvider>
     </NotificationsProvider>
   );
 };
 
-const AppContent: React.FC<{ items: Item[]; onAddItems: () => void }> = memo(
-  ({ items, onAddItems }) => {
-    const { theme } = useThemeContext();
-
+// [ 컴포넌트 분리를 통한 리렌더링 격리 ]
+// 별도의 메모화된 컴포넌트로 분리
+// AppContent가 리렌더링되어도 UserSection은 addNotification이 동일하면 리렌더링 발생하지 않음
+// 알림상태가 변경되면 NotificationSystem과 ComplexForm만 리렌더링됨
+const UserSection = memo(
+  ({
+    addNotification,
+  }: {
+    addNotification: (message: string, type: Notification["type"]) => void;
+  }) => {
     return (
-      <div
-        className={`min-h-screen ${theme === "light" ? "bg-gray-100" : "bg-gray-900 text-white"}`}
-      >
+      <UserProvider addNotification={addNotification}>
         <Header />
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex flex-col md:flex-row">
-            <div className="w-full md:w-1/2 md:pr-4">
-              <ItemList items={items} onAddItemsClick={onAddItems} />
-            </div>
-            <div className="w-full md:w-1/2 md:pl-4">
-              <ComplexForm />
-            </div>
-          </div>
-        </div>
-        <NotificationSystem />
-      </div>
+      </UserProvider>
     );
   }
 );
+
+const AppContent: React.FC<{
+  items: Item[];
+  onAddItems: () => void;
+}> = memo(({ items, onAddItems }) => {
+  const { theme } = useThemeContext();
+  const { addNotification } = useNotificationsContext();
+
+  return (
+    <div
+      className={`min-h-screen ${theme === "light" ? "bg-gray-100" : "bg-gray-900 text-white"}`}
+    >
+      <UserSection addNotification={addNotification} />
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col md:flex-row">
+          <div className="w-full md:w-1/2 md:pr-4">
+            <ItemList items={items} onAddItemsClick={onAddItems} />
+          </div>
+          <div className="w-full md:w-1/2 md:pl-4">
+            <ComplexForm />
+          </div>
+        </div>
+      </div>
+      <NotificationSystem />
+    </div>
+  );
+});
 
 export default App;
