@@ -1,4 +1,5 @@
 import { createContext, useContext, useState } from "react";
+import { useCallback } from "../@lib";
 
 interface ThemeContextType {
   theme: string;
@@ -12,9 +13,9 @@ export const ThemeContext = createContext<ThemeContextType | undefined>(
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   const [theme, setTheme] = useState("light");
 
-  const toggleTheme = () => {
+  const toggleTheme = useCallback(() => {
     setTheme((prevTheme) => (prevTheme === "light" ? "dark" : "light"));
-  };
+  }, []);
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
